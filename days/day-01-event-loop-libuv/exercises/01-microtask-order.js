@@ -13,3 +13,5 @@ Promise.resolve().then(() => console.log('4: Promise.then'));
 process.nextTick(() => console.log('5: nextTick'));
 
 console.log('6: sync end');
+
+1-6-5-4-2-3
