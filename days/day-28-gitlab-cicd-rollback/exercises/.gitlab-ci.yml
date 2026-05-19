@@ -1,0 +1,2 @@
+stages: [build, test, deploy, verify]
+# TODO: docker build, trivy, ecs deploy, rollback on failure
