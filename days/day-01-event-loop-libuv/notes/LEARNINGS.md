@@ -12,16 +12,29 @@
 
 |                    |                                                                                                                                             |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Concept (EN)**   | NodeJS's mechainsm                                                                                                                          |
+| **Concept (EN)**   | NodeJS's mechainsm iterates through different phases to execute callbacks in main thread                                                    |
 | **Khái niệm (VI)** | Cơ chế của Node.js lặp qua các *phase* để thực thi callback (timer, I/O hoàn thành, `setImmediate`, …) trên **một luồng JavaScript chính**. |
 
 
 
-| Question (EN)                                                                                              | Câu hỏi (VI)                                                                                    | Your answer / Câu trả lời |
-| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------- |
-| **What for?** What problem does the Event Loop solve without spawning a new thread per request?            | **Để làm gì?** Event Loop giải quyết bài toán gì mà không cần tạo thread mới cho mỗi request?   |                           |
-| **Why?** Why does Node use single-thread + event-driven instead of “one thread per connection”?            | **Tại sao?** Vì sao Node chọn single-thread + event-driven thay vì “mỗi connection một thread”? |                           |
-| **Production:** If one request blocks the loop for 3s, what happens to other requests in the same process? | **Production:** Một request block loop 3 giây thì các request khác trên cùng process ra sao?    |                           |
+| Question (EN)                                                                                              | Câu hỏi (VI)                                                                                    | Your answer / Câu trả lời                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **What for?** What problem does the Event Loop solve without spawning a new thread per request?            | **Để làm gì?** Event Loop giải quyết bài toán gì mà không cần tạo thread mới cho mỗi request?   | The event loop lets one JS thread handle many concurrent I/O-bound requests by starting async work and running callbacks when I/O completes, instead of blocking or spawning (khởi tạo) one OS thread per request. *It mainly solves **efficient I/O concurrency** (multiplexing waits), not CPU parallelism.* |
+| **Why?** Why does Node use single-thread + event-driven instead of “one thread per connection”?            | **Tại sao?** Vì sao Node chọn single-thread + event-driven thay vì “mỗi connection một thread”? | NodeJS uses a single-thread + event-driven because most server work is I/O-bound: connections spend most of the                                                                                                                                                                                                |
+| **Production:** If one request blocks the loop for 3s, what happens to other requests in the same process? | **Production:** Một request block loop 3 giây thì các request khác trên cùng process ra sao?    |                                                                                                                                                                                                                                                                                                                |
+
+
+### So sánh một câu | One-line comparison
+
+**Thread per connection** vs **Node: single-thread + event-driven**
+
+
+|                | Thread per connection                                                                                      | Node: single-thread + event-driven                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Mạnh**       | CPU song song tự nhiên (nhiều core); một connection block ít ảnh hưởng connection khác (nếu tách thread).  | Rất nhiều connection I/O; RAM thấp; ít context switch.                    |
+| **Yếu**        | RAM; scale connection; phức tạp sync (lock, race).                                                         | CPU nặng trên main thread; phải thiết kế async / worker.                  |
+| **Strengths**  | Natural CPU parallelism (many cores); one blocked connection affects others less when isolated per thread. | Many concurrent I/O connections; lower RAM; less context switching.       |
+| **Weaknesses** | High RAM; harder to scale connections; sync complexity (locks, races).                                     | Heavy CPU on main thread; must design async I/O and workers for CPU work. |
 
 
 ---
@@ -171,11 +184,11 @@
 
 
 
-| Question (EN)                                                                                  | Câu hỏi (VI)                                                                             | Your answer / Câu trả lời |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------- |
-| **What for?** What metric should you measure in `02-block-event-loop.js` when `/block` is hit? | **Để làm gì?** Bài 2 nên đo metric gì khi gọi `/block`?                                  |                           |
-| **Why?** How do `cluster` vs `worker_threads` address blocking differently? (preview Day 4)    | **Tại sao?** `cluster` vs `worker_threads` xử lý block khác nhau thế nào? (gợi ý Ngày 4) |                           |
-| **Lab:** `/health` latency (ms) — Before: ___ | During block: ___                              | **Thực hành:** Latency `/health` (ms) — Trước: ___ | Khi block: ___                      |                           |
+| Question (EN)                                                                                  | Câu hỏi (VI)                                                                             | Your answer / Câu trả lời                          |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **What for?** What metric should you measure in `02-block-event-loop.js` when `/block` is hit? | **Để làm gì?** Bài 2 nên đo metric gì khi gọi `/block`?                                  |                                                    |
+| **Why?** How do `cluster` vs `worker_threads` address blocking differently? (preview Day 4)    | **Tại sao?** `cluster` vs `worker_threads` xử lý block khác nhau thế nào? (gợi ý Ngày 4) |                                                    |
+| **Lab:** `/health` latency (ms) — Before: ___                                                  | During block: ___                                                                        | **Thực hành:** Latency `/health` (ms) — Trước: ___ |
 
 
 ---
